@@ -4,13 +4,14 @@
 using namespace std;
 int main()
 {
+    srand(time(NULL));
     float t0, t1, t2, t3;
     t0 = clock();
     double A[MAX][MAX], x[MAX], y[MAX];
     for (int i = 0; i < MAX; i++){
         for (int j = 0; j < MAX; j++){
-            A[i][j]= rand() % 100;
-            x[j]= rand() % 100;
+            A[i][j]= rand() % 256;
+            x[j]= rand() % 256;
         }
     }
     t0=clock();
