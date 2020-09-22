@@ -25,7 +25,7 @@ int main()
         }
     t1 = clock();
     float time1= (double(t1-t0)/CLOCKS_PER_SEC);
-    cout << "Execution Time 1: ";printf("%f",time1);cout<<endl;
+    cout << "Execution Time 1: "<<time1<<endl;
     t2 = clock();
     for(long i=0; i<k; ++i)
         for(long j=0; j<n; ++j)
@@ -37,8 +37,8 @@ int main()
                 C[i][j] += A[i][z] * B[z][j];
     t3 = clock();
     float time2= (double(t3-t2)/CLOCKS_PER_SEC);
-    cout << "Execution Time 2: ";printf("%f",time2);
+    cout << "Execution Time 2: "<<time2<<endl;
     float resultado =(time1+time2);
-    cout << "\nResultado completo: ";printf("%f",resultado);
+    cout << "\nResultado completo: "<<resultado<<endl;
     return 0;
 }
