@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include <math.h>
 #include <sys/time.h>
 
 int pthread_mutex_init(pthread_mutex_t* mutex_p,
@@ -48,8 +49,11 @@ void* Thread_sum(void* rank)
 }
 int main(int argc, char* argv[])
 {
+	clock_t t_ini,t_fin;
+	double secs;
 	int limite=8;
 	int error;
+	t_ini = clock();
 	printf("Se crearan %d hilos\n",limite);
 	for (int i = 0; i < limite; ++i)
 	{
@@ -72,8 +76,8 @@ int main(int argc, char* argv[])
 	//pthread_create(&hilo2,NULL,Thread_function,NULL);
 	//pthread_join(hilo1,NULL);
 	//pthread_join(hilo2,NULL);
-	//t_fin = clock();
-	//secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
-	//printf("%lf milisegundos\n",secs*1000.0);
+	t_fin = clock();
+	secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
+	printf("%lf milisegundos\n",secs);
 	return 0;
 }
