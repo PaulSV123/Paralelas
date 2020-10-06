@@ -7,29 +7,21 @@
 #include <math.h>
 #include <stdatomic.h>
 #include <semaphore.h>
-int sem_init(sem_t* semaphore_p,int shared, unsigned initial_val);
-int sem_destroy(sem_t* semaphore_p);
-int sem_post(sem_t* semaphore_p);
-int sem_wait(sem_t* semaphore_p);
-int pthread_mutex_init(pthread_mutex_t* mutex_p,
-	const pthread_mutexattr_t* attr_p);
-int pthread_mutex_destroy(pthread_mutex_t* mutex_p);
-int pthread_mutex_lock(pthread_mutex_t* mutex_p);
-int pthread_mutex_unlock(pthread_mutex_t* mutex_p);
-pthread_t hilo_general[2];
+pthread_t hilo_general[64];
 pthread_mutex_t mutex;
-int thread_count=2;
+pthread_mutex_t cond_var;
+int thread_count=64;
 long long sum=0;
 int n=pow(10,8);
 float tiempo=0;
 int flag=0;
-int limite=2;
+int limite=64;
 int counter=0;
 sem_t count_sem;
 sem_t barrier_sem;
-sem_t semaphores[2];
-int MSG_MAX=2;
-char* messages[2];
+sem_t semaphores[64];
+int MSG_MAX=64;
+char* messages[64];
 
 void* Thread_mutex(void* rank)
 {
@@ -122,18 +114,46 @@ void* Send_msg_semaforo(void* rank)
 		sem_post(&count_sem);
 		sem_wait(&barrier_sem);
 	}
+	printf("Paso el hilo\n");
 	sem_post(&semaphores[dest]);
 	sem_wait(&semaphores[my_rank]);
 	printf("Thread %ld > %s\n", my_rank, messages[my_rank]);
 	return NULL;
 }
+
+void* Thread_variable(void* rank)
+{
+	long my_rank = (long) rank;
+	double factor;
+	double my_sum=0.0;
+	long long i;
+	long long my_n = n/thread_count;
+	long long my_fisrt_i = my_n+my_rank;
+	long long my_last_i = my_fisrt_i + my_n;
+	pthread_mutex_lock(&mutex);
+	printf("Esta inicializando\n");
+	counter++;
+	if(counter == thread_count)
+	{
+		counter=0;
+		pthread_cond_broadcast(&cond_var);
+	}
+	else
+	{
+		while(pthread_cond_wait(&cond_var,&mutex) !=0);
+	}
+	pthread_mutex_unlock(&mutex);
+	printf("se puede continuar\n");
+	return NULL;
+}
+
 int main(int argc, char* argv[])
 {
 	int error;
 	printf("Se crearan %d hilos\n",limite);
 	for (int i = 0; i < limite; ++i)
 	{
-		error = pthread_create(&hilo_general[i],NULL,&Send_msg_semaforo,(void*)i);
+		error = pthread_create(&hilo_general[i],NULL,&Thread_variable,(void*)i);
 		if(error!=0)
 		{
 			printf("Error en la hilo\n");
@@ -143,7 +163,7 @@ int main(int argc, char* argv[])
 	{
 		pthread_join(hilo_general[i],NULL);
 	}
-	printf("Con %d hilos son %lf milisegundos\n",limite,tiempo/limite);
-	printf("La suma total %f",sum);
+	//printf("Con %d hilos son %lf milisegundos\n",limite,tiempo/limite);
+	//printf("La suma total %f",sum);
 	return 0;
 }
