@@ -6,11 +6,12 @@
 #include <sys/time.h>
 #include <math.h>
 #include <stdatomic.h>
-int limite=2;
-pthread_t hilo_general[64];
-int thread_count=64;
+int limite=32;
+pthread_t hilo_general[32];
+int thread_count=32;
 int flag=0;
-long long int n=pow(10,2);
+float tiempo=0;
+long long int n=pow(10,8);
 
 void* Thread_function(void* ignore)
 {
@@ -42,36 +43,44 @@ void* Thread_sum(void* rank)
 	}
 	else
 		factor = -1.0;
-	for(i=0; i < my_n;i++, factor = -factor)
+	double my_sum=0.0;
+	clock_t t_ini,t_fin;
+	t_ini=clock();
+	for(i=my_fisrt_i; i < my_last_i;i++, factor = -factor)
 	{
 		//printf("adsadsadsadsadsa\n",hilo_general[i]);
 		//printf("asdsadsadsadasdas %ld \n",pthread_self());
 		//printf("Hilo genedal %ld \n",hilo_general[flag]);
-		while (hilo_general[flag]!=pthread_self());
 		sum += factor/(2*i+1);
+	}
+	while (hilo_general[flag]!=pthread_self());
+	sum += my_sum;
 		//flag = (flag+1) % thread_count;
 		//printf("Esta corriendo tal proceso %d \n",flag);
-		if(flag+1==limite)
-		{
-			flag=0;
+		//if(flag+1==limite)
+		//{
+		//	flag=(flag+1) % thread_count;;
 			//printf("asdadsadsads %lld \n",i);
-		}
-		else{
-			flag = (flag+1) % thread_count;
-		}
+		//}
+		//else{
+		//	flag++; //= (flag+1) % thread_count;
+		//}
 		//printf("valor s %lli \n",i);
 		//sleep(0.000001);
 		//flag++;
-	}
 	//printf("Esto es una prueba de %d a la %d\n",n,thread_count);
+	t_fin=clock();
+	double secs=(double)(t_fin - t_ini) / CLOCKS_PER_SEC;
+	tiempo+=secs;
+	flag++;
 	return NULL;
 }
 int main(int argc, char* argv[])
 {
-	clock_t t_ini,t_fin;
-	double secs;
+	//clock_t t_ini,t_fin;
+	//double secs;
 	int error;
-	t_ini = clock();
+	//t_ini = clock();
 	printf("Se crearan %d hilos\n",limite);
 	//error = pthread_create(&t1, NULL, Thread_function, NULL);
 	for (int i = 0; i < limite; ++i)
@@ -96,8 +105,8 @@ int main(int argc, char* argv[])
 	//pthread_create(&hilo2,NULL,Thread_function,NULL);
 	//pthread_join(hilo1,NULL);
 	//pthread_join(hilo2,NULL);
-	t_fin = clock();
-	secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
-	printf("%lf milisegundos\n",secs);
+	//t_fin = clock();
+	//secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
+	printf("Con %d hilos son %lf segundos\n",limite,tiempo/limite);
 	return 0;
 }
