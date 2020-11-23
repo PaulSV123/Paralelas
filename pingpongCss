@@ -4,41 +4,43 @@
 #include <chrono>
 #include <condition_variable>
 
-using namespace std::chrono_literals;
+using namespace std;
+condition_variable condition_;
+mutex mutex_;
+bool is_ping = false;
+
+
+void print_ping(int limitador)
+{
+    unique_lock<mutex> lock(mutex_);
+    for (int i = 0; i < limitador; i++)
+    {
+
+        condition_.wait(lock,[]{ return is_ping?true:false;});
+        cout<<"\n\033[1;32mPING\033[0m\n";
+        is_ping = !is_ping;
+        condition_.notify_one();
+    }
+}
+
+void print_pong(int limitador)
+{
+    unique_lock<mutex> lock(mutex_);
+    for (int i = 0; i < limitador; i++)
+    {
+        condition_.wait(lock,[]{ return !is_ping?true:false;});
+        cout<<"\n\033[1;31mPONG\033[0m\n";
+        is_ping = !is_ping;
+        condition_.notify_one();
+    }
+}
 
 int main()
 {
-	std::mutex mutex;
-	std::condition_variable cv;
-	bool is_ping = true;
-
-	auto ping = [&] ( ) -> void {
-		while(true)
-		{
-			std::unique_lock<std::mutex> unique_lock(mutex);
-			cv.wait(unique_lock,[&](){return is_ping;});
-			std::this_thread::sleep_for(1s);
-			std::cout<< "ping" <<std::endl;
-			is_ping = !is_ping;
-			cv.notify_one();
-		}
-	};
-	auto pong = [&] ( ) -> void {
-		while(true)
-		{
-			std::unique_lock<std::mutex> unique_lock(mutex);
-			cv.wait(unique_lock,[&](){return is_ping;});
-			std::this_thread::sleep_for(1s);
-			std::cout<< "pong" <<std::endl;
-			is_ping = !is_ping;
-			cv.notify_one();
-		}
-	};
-
-	int ping_pong_number = 6;
-	std::thread ping_thread(ping);
-	std::thread pong_thread(pong);
-	ping_thread.join();
-	pong_thread.join();
-	return 0;
+    int total_repe = 2;
+    thread thread_1(print_ping, total_repe);
+    thread thread_2(print_pong, total_repe);
+    thread_1.join();
+    thread_2.join();
+    return 0;
 }
