@@ -10,26 +10,26 @@ mutex mutex_;
 bool is_ping = false;
 
 
-void print_ping(int limitador)
+void in_ping(int limitador)
 {
     unique_lock<mutex> lock(mutex_);
     for (int i = 0; i < limitador; i++)
     {
 
         condition_.wait(lock,[]{ return is_ping?true:false;});
-        cout<<"\n\033[1;32mPING\033[0m\n";
+        cout<<"PING"<<endl;
         is_ping = !is_ping;
         condition_.notify_one();
     }
 }
 
-void print_pong(int limitador)
+void in_pong(int limitador)
 {
     unique_lock<mutex> lock(mutex_);
     for (int i = 0; i < limitador; i++)
     {
         condition_.wait(lock,[]{ return !is_ping?true:false;});
-        cout<<"\n\033[1;31mPONG\033[0m\n";
+        cout<<"PONG"<<endl;
         is_ping = !is_ping;
         condition_.notify_one();
     }
@@ -38,8 +38,8 @@ void print_pong(int limitador)
 int main()
 {
     int total_repe = 2;
-    thread thread_1(print_ping, total_repe);
-    thread thread_2(print_pong, total_repe);
+    thread thread_1(in_ping, total_repe);
+    thread thread_2(in_pong, total_repe);
     thread_1.join();
     thread_2.join();
     return 0;
